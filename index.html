@@ -26,6 +26,9 @@
         .nav-item.active { color: var(--pp-blue); }
         .nav-item i { font-size: 20px; display: block; margin-bottom: 4px; }
         .qr-placeholder { width: 200px; height: 200px; background: #eee; margin: 20px auto; display: flex; align-items: center; justify-content: center; border: 2px dashed #ccc; }
+
+        /* Fix for Smartsupp bubble so it doesn't block the nav bar */
+        #smartsupp-widget-container { bottom: 80px !important; }
     </style>
 </head>
 <body>
@@ -159,5 +162,17 @@
     }
     updateUI();
 </script>
+
+<script type="text/javascript">
+var _smartsupp = _smartsupp || {};
+_smartsupp.key = 'b561b44ffefb49aa584810c42983ccf091f55186';
+window.smartsupp||(function(d) {
+var s,c,o=smartsupp=function(){ o._.push(arguments)};o._=[];
+s=d.getElementsByTagName('script')[0];c=d.createElement('script');
+c.type='text/javascript';c.charset='utf-8';c.async=true;
+c.src='https://www.smartsuppchat.com/loader.js?';s.parentNode.insertBefore(c,s);
+})(document);
+</script>
+
 </body>
 </html>
